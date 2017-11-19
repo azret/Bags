@@ -1,0 +1,12 @@
+#
+
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+
+#
+
+.*/
+*.suo
+*.user
+*.local
