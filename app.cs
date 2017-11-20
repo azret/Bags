@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
@@ -72,81 +73,53 @@ static class App
             /** 
              */
 
-            to: 17
+            limit: 17
 
         );
 
-        var Axis = new List<Bag>();
-
-        foreach (var i in lexicon)
-        {
-            Axis.Add(i.Value);
-        }
-
-        Axis.Sort((a, b) =>
-        {
-
-            int c = 0;
-
-            if (a.Weight > b.Weight)
-            {
-                c = -1;
-            }
-            else if (a.Weight < b.Weight)
-            {
-                c = +1;
-            }
-
-            if (c == 0)
-            {
-                c = lang.Compare(a.Key, b.Key);
-            }
-
-            return c;
-
-        });
-
+        var graph = Graph.Create(lexicon);
+        
         var OUTPUT = new StringBuilder();
 
-        foreach (var bag in Axis)
+        foreach (var node in graph)
         {
-            if (bag.Weight >= MIN)
+            StringBuilder LINE = new StringBuilder(); int COUNT = 0;
+
+            for (int j = 0; node.Links != null && j < node.Links.Length; j++)
             {
-                StringBuilder LINE = new StringBuilder(); int COUNT = 0;
-
-                bag.ForEach((key, count) =>
-                {
-
-                    if (LINE.Length > 0)
-                    {
-                        LINE.Append(", ");
-                    }
-
-                    LINE.Append(String.Format("*{0}* ({1}|{2})", key, count, lexicon[key].Weight));
-
-                    COUNT++;
-
-                });
-
-                if (OUTPUT.Length > 0)
-                {
-                    OUTPUT.Append("\r\n");
-                }
-
-                OUTPUT.Append(String.Format("~ **{0}** ({1})",
-                    bag.Key, bag.Weight, COUNT));
+                var link = node.Links[j];
 
                 if (LINE.Length > 0)
                 {
-                    OUTPUT.AppendFormat(" - {0}", LINE.ToString());
+                    LINE.Append(", ");
                 }
+
+                string label = graph[link.No].Label;
+
+                Debug.Assert(link.Label == label);
+
+                LINE.Append(String.Format("*{0}* ({1}|{2})", label, link.Weight, link.No));
+
+                COUNT++;
+            }
+
+            if (OUTPUT.Length > 0)
+            {
+                OUTPUT.Append("\r\n");
+            }
+
+            OUTPUT.Append(String.Format("~ **{0}** ({1})",
+                node.Label, node.Weight, COUNT));
+
+            if (LINE.Length > 0)
+            {
+                OUTPUT.AppendFormat(" - {0}", LINE.ToString());
             }
 
         }
 
         File.WriteAllText("..\\DATA\\LA.md", OUTPUT.ToString());
 
-        var graph = Graph.Create(lexicon);
 
         graph.Save(@"D:\Bags\graph\graph.json");
 
@@ -237,17 +210,26 @@ static class App
         return lexicon;
     }
 
-    static void Reduce(this IDictionary<string, Bag> bags, System.Language.IOrthography lang, int weight, int to)
+    /// <summary>
+    /// Reduces the size of the specified lexicon.
+    /// </summary>
+    /// <param name="weight">Minimum weight of the entry to be included.</param>
+    /// <param name="limit">Maximum number of entries in the window.</param>
+    static void Reduce(this IDictionary<string, Bag> lexicon, System.Language.IOrthography lang, int weight, int limit)
     {
-        Parallel.ForEach(bags, (bag) =>
+        var reduce = new HashSet<string>(); var depends = new HashSet<string>();
+
+        Parallel.ForEach(lexicon, (bag) =>
         {
             List<Tuple<String, Int32, Int32>> SORT = new List<Tuple<String, Int32, Int32>>();
+
+            // A single bag should never be worked on concurrently
 
             bag.Value.ForEach((key, count) =>
             {
                 Bag lex = null;
 
-                if (!bags.TryGetValue(key, out lex))
+                if (!lexicon.TryGetValue(key, out lex))
                 {
                     lex = null;
                 }
@@ -285,7 +267,7 @@ static class App
 
             for (int i = 0; i < SORT.Count; i++)
             {
-                if (TAKE.Count >= to)
+                if (TAKE.Count >= limit)
                 {
                     break;
                 }
@@ -297,10 +279,34 @@ static class App
 
             for (int i = 0; i < TAKE.Count; i++)
             {
-                bag.Value.Add(TAKE[i].Item1, TAKE[i].Item2);
+                string key = TAKE[i].Item1;
+
+                bag.Value.Add(key, TAKE[i].Item2);
+
+                lock (depends)
+                {
+                    depends.Add(key);
+                }
+            }
+
+            if (bag.Value.Weight < weight)
+            {
+                lock (reduce)
+                {
+                    reduce.Add(bag.Value.Key);
+                }
             }
 
         });
+
+        foreach (var key in reduce)
+        {
+            if (!depends.Contains(key))
+            {
+                lexicon.Remove(key);
+            }
+        }
+
     }
 }
 

@@ -36,7 +36,7 @@ vah
 non sic iam ac adque alii an annon antequam ast at ateque atque atqui aut autem 
 cum donec dum dummodo enim ergo et ed etenim etiamsi etiamtum etiamtunc etsi 
 nam namque nanque ne nec necdum necne necunde nedum neque nequedum neve ni nisi nonnisi 
-ita etiam idem item quoque igitur haud equidem
+ita etiam idem item quoque igitur haud equidem neu
 
 postquam priusquam prout 
 quam quamquam quando quandoquidem quanquam quantumvis quasi 
@@ -44,7 +44,7 @@ quia quocirca quod quodsi quom quominus quoniam quum
 
 sed set seu si sicut sine sin siquidem siue sive tamen tametsi
 ut vt utei uti utrum utrumnam vel uel verumtamen 
-veruntamen vero verum
+veruntamen vero verum solo solum
 
 quidem quodam quiddam
 
@@ -54,9 +54,9 @@ qui quid quo quomodo
 
 #
 
-ubi unde modo vero tum ubi ibi adhuc ideo tantum deinde ideo sat satis nunc tam 
-causa magis primum satis semper hinc saepe huc tunc multa numquam minus olim 
-opus prius haud maxime licet simul solum tamquam
+ubi unde modo modum modi vero tum ubi ibi adhuc ideo tantum deinde ideo sat satis nunc tam 
+causa magis primum satis adeo semper hinc saepe huc tunc multa numquam minus olim 
+opus prius haud maxime licet simul solum tamquam postea propterea
 
 #
 
@@ -148,7 +148,7 @@ ipsum	ipsam	ipsum	ipsos	ipsas	ipsa
 ipso	ipsa	ipso	ipsis
 
 hic	haec	hoc		hi hii	hae	haec
-huius, hujus	horum	harum	horum
+huius huiusce hujus	horum	harum	horum
 huic	his
 hunc	hanc	hoc	hos	has	haec
 hoc	hac	hoc	his
@@ -178,7 +178,7 @@ quis	quid		qui	quae
 cuius   cujus	quorum	quarum	quorum
 cui	quibus
 quem	quid	quos	quas	quae
-quo	quibus
+quo	quibus quoquo
 
 qui	quae	quod	quoad		qui	quae
 cuius  cujus	quorum	quarum	quorum
@@ -200,7 +200,7 @@ fui	fuisti	fuit	fuimus	fuistis	fuerunt, fuere
 fueram	fueras	fuerat	fueramus	fueratis	fuerant
 fuero	fueris	fuerit	fuerimus	fueritis	fuerint
 
-sim	sis	sit	simus	sitis	sint
+sim	sis	sit siet	simus	sitis	sint
 essem	 forem	esses	 fores	esset	 foret	essemus	 foremus	essetis	 foretis	essent	 forent
 fuerim	fueris	fuerit	fuerimus	fueritis	fuerint
 fuissem	fuisses	fuisset	fuissemus	fuissetis	fuissent
@@ -254,7 +254,7 @@ faciunt	faciant	 	faciebant	facerent	facient	faciunto ­
 
 fio	fiam	 	fiebam	fierem	fiam	 
 fis	fias	fi	fiebas	fieres	fies	
-fit	fiat	 	fiebat	fieret	fiet	
+fit fiet	fiat	 	fiebat	fieret	fiet	
 
 fimus	fiamus	 	fiebamus	fieremus	fiemus	 
 fitis	fiatis	fite	fiebatis	fieretis	fietis	fitote

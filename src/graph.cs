@@ -18,6 +18,12 @@
                 get;
                 set;
             }
+
+            public string Label
+            {
+                get;
+                set;
+            }
         }
 
         public class Node
@@ -51,81 +57,138 @@
         {
             var graph = new List<Node>();
 
-            /**
-            */
+            // Re-shape the bag of words dictionary into a graph...
 
             foreach (var entry in lexicon)
             {
                 Node node = null;
 
-                /**
-                */
+                graph.Add(node = new Node()
+                {
+                    No = entry.Value.No,
+                    Label = entry.Value.Key,
+                    Weight = entry.Value.Weight
+                });
 
                 var links = new List<Link>();
 
                 entry.Value.ForEach((key, count) =>
                 {
-
                     links.Add(new Link()
                     {
-                        /**
-                         */
-
                         No = lexicon[key].No,
-
-                        /**
-                        */
-
+                        Label = key,
                         Weight = count
-
                     });
 
                 });
-
-                /**
-                */
-
-                graph.Add(node = new Node()
-                {
-                    /**
-                     */
-
-                    No = entry.Value.No,
-
-                    /**
-                     */
-
-                    Label = entry.Value.Key,
-
-                    /**
-                     */
-
-                    Weight = entry.Value.Weight,
-
-                    /**
-                    */
-
-                    Links = links.ToArray()
-
-                });
+                
+                node.Links = links.ToArray();                
             }
 
-            /**
-            */
+            // Sort the nodes ordinally. It is important that the
+            //      compare function is simple at portable...
+             
+            graph.Sort((i, comparand) => Compare(i.Label, comparand.Label));
+            
+            var swap = new Dictionary<int, Node>();
 
-            graph.Sort((a, b) => string.CompareOrdinal(a.Label, b.Label));
+            for (int i = 0; i < graph.Count; i++)
+            {
+                var no = graph[i].No;
 
-            /**
-            */
+                Node node;
+
+                if (swap.TryGetValue(no, out node))
+                {
+                    throw new InvalidOperationException();
+                }
+
+                node = graph[i]; swap[no] = node;
+
+                // Create a zero-based index based on the new sort order...
+
+                node.No = i;
+            }
+
+            for (int i = 0; i < graph.Count; i++)
+            {
+                for (int j = 0; graph[i].Links != null && j < graph[i].Links.Length; j++)
+                {
+                    // Re-reference into new sort order...
+
+                    graph[i].Links[j].No = swap[graph[i].Links[j].No].No;
+                }
+            }            
 
             return graph;
+        }
+
+        public static int Compare(string s, string comparand)
+        {
+            if (s.Length > comparand.Length)
+            {
+                return +1;
+            }
+            else if (s.Length < comparand.Length)
+            {
+                return -1;
+            }
+
+            int L = s.Length;
+
+            for (int i = 0; i < L; i++)
+            {
+                if (s[i] > comparand[i])
+                {
+                    return +1;
+                }
+                else if (s[i] < comparand[i])
+                {
+                    return -1;
+                }
+            }
+
+            return 0;
+        }
+
+        public static Node Find(this IList<Node> graph, string label)
+        {
+            Node found = null;
+
+            int low = 0, high = graph.Count - 1;
+
+            while (low <= high)
+            {
+                int i = (int)(((uint)low + (uint)high) >> 1);
+
+                Node p = graph[i];
+
+                int c = Compare(p.Label, label);
+
+                if (c < 0)
+                {
+                    low = i + 1;
+                }
+                else
+                {
+                    high = i - 1;
+
+                    if (c == 0)
+                    {
+                        found = p;                        
+                    }
+                }
+            }
+
+            return found;
         }
 
         public static void Save(this IList<Node> graph, string file)
         {
             using (var writer = File.Open(file, FileMode.Create, FileAccess.Write, FileShare.None))
             {
-                writer.Write("{\r\n\t\"graph\": [");
+                writer.Write("{\r\n \"graph\": [");
 
                 int written = 0;
 
@@ -135,48 +198,56 @@
 
                     if (written > 0)
                     {
-                        writer.Write(", {\r\n");
+                        writer.Write(", { ");
                     }
                     else
                     {
-                        writer.Write("\r\n\t{\r\n");
+                        writer.Write("\r\n  { ");
                     }
 
                     written++;
 
-                    writer.Write($"\t\t\"id\": {node.No}, ");
+                    writer.Write($"\"id\": {node.No}, ");
                     writer.Write($"\"l\": \"{node.Label}\", ");
-                    writer.Write($"\"w\": {node.Weight},\r\n");
-                    writer.Write($"\t\t\"n\": [");
+                    writer.Write($"\"w\": {node.Weight}");
 
-                    int links = 0;
-
-                    for (int j = 0; node.Links != null && j < node.Links.Length; j++)
+                    if (node.Links != null && node.Links.Length > 0)
                     {
-                        var link = node.Links[j];
+                        writer.Write($", \"n\": [");
 
-                        if (links > 0)
+                        int links = 0;
+
+                        for (int j = 0; node.Links != null && j < node.Links.Length; j++)
                         {
-                            writer.Write(",\r\n\t\t\t{");
-                        }
-                        else
-                        {
-                            writer.Write("\r\n\t\t\t{");
+                            var link = node.Links[j];
+
+                            if (links > 0)
+                            {
+                                writer.Write(",\r\n     { ");
+                            }
+                            else
+                            {
+                                writer.Write("\r\n     { ");
+                            }
+
+                            links++;
+
+                            writer.Write($"\"id\": {link.No}, ");
+                            writer.Write($"\"w\": {link.Weight}}}");
                         }
 
-                        links++;
-
-                        writer.Write($"\"id\": {link.No}, ");
-                        writer.Write($"\"w\": {link.Weight}}}");
+                        writer.Write($"\r\n  ]\r\n");
+                    }
+                    else
+                    {
+                        writer.Write($"\r\n");
                     }
 
-                    writer.Write($"\r\n\t\t]\r\n");
-
-                    writer.Write("\t}");
+                    writer.Write(" }");
 
                 }
 
-                writer.Write("\r\n\t]\r\n}");
+                writer.Write("\r\n ]\r\n}");
             }
         }
 
