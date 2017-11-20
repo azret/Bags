@@ -10,3 +10,4 @@
 *.suo
 *.user
 *.local
+/src/whitakar

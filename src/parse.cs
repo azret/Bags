@@ -3,54 +3,17 @@
     using System;
     using System.Collections.Generic;
     using System.Text;
+    using System.Threading.Tasks;
 
     public class Tokens
     {
         public static IList<string> Map(string file) { return Map(file, null); }
-        public static IList<string> Map(string file, Func<string, string> take)
+        public static IList<string> Map(string file, Action<string, Action<string>> read)
         {
             int i = 0; string plain = File.ReadAllText(file);
 
             var DOC = new List<string>();
-
-            Func<char, bool> IsPunctuation = (c) =>
-           {
-               switch (c)
-               {
-                   case '!': return true;
-                   case '"': return true;
-                   case '#': return true;
-                   case '$': return true;
-                   case '%': return true;
-                   case '&': return true;
-                   case '\'': return true;
-                   case '(': return true;
-                   case ')': return true;
-                   case '*': return true;
-                   case '+': return true;
-                   case ',': return true;
-                   case '.': return true;
-                   case '/': return true;
-                   case ':': return true;
-                   case ';': return true;
-                   case '<': return true;
-                   case '=': return true;
-                   case '>': return true;
-                   case '?': return true;
-                   case '@': return true;
-                   case '\\': return true;
-                   case '^': return true;
-                   case '`': return true;
-                   case '{': return true;
-                   case '|': return true;
-                   case '}': return true;
-                   case '~': return true;
-                   case '-': return true;
-               }
-
-               return false;
-           };
-
+             
             while (i < plain.Length)
             {
                 if (char.IsWhiteSpace(plain[i]))
@@ -78,7 +41,7 @@
                     // Trim Left
 
                     while (start < end
-                                                && (IsPunctuation(plain[start]) || !char.IsLetter(plain[start])))
+                                                && (char.IsPunctuation(plain[start]) || !char.IsLetter(plain[start])))
                     {
                         start++;
                     }
@@ -86,7 +49,7 @@
                     // Trim Right
 
                     while (end > start
-                                                && (IsPunctuation(plain[end - 1]) || !char.IsLetter(plain[end - 1])))
+                                                && (char.IsPunctuation(plain[end - 1]) || !char.IsLetter(plain[end - 1])))
                     {
                         end--;
                     }
@@ -97,15 +60,16 @@
                     {
                         String s = plain.Substring(start, len);
 
-                        if (take != null)
+                        if (read != null)
                         {
-                            s = take(s);
-                        }
-
-                        if (!String.IsNullOrWhiteSpace(s))
-                        {
-                            DOC.Add(s);
-                        }
+                            read(s, (w) =>
+                            {
+                                if (!String.IsNullOrWhiteSpace(w))
+                                {
+                                    DOC.Add(w);
+                                }
+                            });
+                        }                        
                     }
                 }
 
@@ -139,49 +103,33 @@
             }
         }
 
-        public static void Map<T>(string[] paths, string search, Func<string, string> read, Action<string, IList<string>, T> process, T state)
+        public static void Map<T>(string[] paths, string search, Action<string, Action<string>> read, Action<string, IList<string>, T> process, T state)
         {
-            ISet<string> processed = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            ISet<string> files = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
             foreach (var path in paths)
             {
                 foreach (var file in Directory.EnumerateFiles(path, search, SearchOption.AllDirectories))
                 {
-                    if (processed.Contains(file))
+                    if (files.Contains(file))
                     {
                         continue;
                     }
 
-                    processed.Add(file);
-
-                    if (process != null)
-                    {
-                        process(file, Map(file, read), state);
-                    }
+                    files.Add(file);
                 }
             }
-        }
 
-        public static void Map<T>(string path, string search, Func<string, string> read, Action<string, IList<string>, T> process, T state)
-        {
-            foreach (var file in Directory.EnumerateFiles(path, search, SearchOption.AllDirectories))
+            if (process != null)
             {
-                if (process != null)
+                Parallel.ForEach(files, (file) =>
                 {
+
                     process(file, Map(file, read), state);
-                }
-            }
-        }
 
-        public static void Map(string path, string search, Func<string, string> read, Action<string, IList<string>> process)
-        {
-            foreach (var file in Directory.EnumerateFiles(path, search, SearchOption.AllDirectories))
-            {
-                if (process != null)
-                {
-                    process(file, Map(file, read));
-                }
+                });
             }
         }
+        
     }
 }

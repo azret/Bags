@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Bags
 {
@@ -114,7 +114,7 @@ namespace Bags
 
             for (int i = 0; i < s.Length; i++)
             {
-                r.Append(s[i]);
+                r.Append(Convert(s[i]));
             }
             
             return r.ToString();
@@ -135,15 +135,28 @@ namespace Bags
             return true;
         }
 
+        static object SCREEN = new object(); 
+
+        static void Log(string msg)
+        {
+            lock (SCREEN)
+            {
+                Console.WriteLine(msg);
+            }
+        }
+
         static void Main(string[] args)
         {
             ISet<string> PARTICLES = new HashSet<string>(Tokens.Map("..\\data\\LA.ignore", 
                 
-                (TOKEN) =>
+                (TOKEN, EMIT) =>
                 {
+                    String s = Read(TOKEN);
 
-                    return Read(TOKEN);
-
+                    if (EMIT != null)
+                    {
+                        EMIT(s);
+                    }
                 }), 
                 
                 StringComparer.InvariantCultureIgnoreCase
@@ -156,18 +169,18 @@ namespace Bags
                 
                 new string[] 
                 {
-                    "..\\DATA\\LA\\"                    
+                    "..\\DATA\\LA\\"
                 }, 
                 
                 @"*.la",
                 
-                (TOKEN) =>
+                (TOKEN, EMIT) =>
                 {
                     string s = Read(TOKEN);
 
                     if (!IsLegible(s))
                     {
-                        return null;
+                        return;
                     }
                     
                     if (s.EndsWith("que") && s.Length > "que".Length)
@@ -182,20 +195,22 @@ namespace Bags
 
                     if (PARTICLES.Contains(s))
                     {
-                        return null;
+                        return;
                     }
-                    
-                    return s;
 
+                    if (EMIT != null)
+                    {
+                        EMIT(s);
+                    }
                 },
 
                 (FILE, DOC, LEX) =>
                 {
-                    Console.WriteLine(Path.GetFullPath(FILE));
-
                     StringBuilder DEBUG = new StringBuilder();
 
-                    var BagOfWords = System.Text.Bags.Compute(DOC, 7, (FOCUS, NEIGHBOR, Δ) =>
+                    Log(Path.GetFullPath(FILE));
+
+                    var BagOfWords = System.Text.Bags.Compute(DOC, 5, (FOCUS, NEIGHBOR, Δ) =>
                     {
 
                         if (FOCUS[0] == char.ToUpperInvariant(FOCUS[0]))
@@ -228,14 +243,17 @@ namespace Bags
 
                         if (LEX != null)
                         {
-                            Bag lex; string key = bag.Key;
-
-                            if (!LEX.TryGetValue(key, out lex))
+                            lock (LEX)
                             {
-                                LEX[key] = lex = new Bag(key);
-                            }
+                                Bag lex; string key = bag.Key;
 
-                            lex.Add(bag);
+                                if (!LEX.TryGetValue(key, out lex))
+                                {
+                                    LEX[key] = lex = new Bag(key);
+                                }
+
+                                lex.Add(bag);
+                            }
                         }
                     }
 
@@ -272,7 +290,7 @@ namespace Bags
 
             var OUTPUT = new StringBuilder();
 
-            foreach (var bag in Axis)
+            Parallel.ForEach(Axis, new ParallelOptions() { MaxDegreeOfParallelism = 1 }, (bag)=>
             {
                 List<Tuple<String, Int32, Int32>> SORT = new List<Tuple<String, Int32, Int32>>();
 
@@ -329,35 +347,38 @@ namespace Bags
 
                     if (LINE.Length > 0)
                     {
-                        LINE.Append("\r\n");
+                        LINE.Append(", ");
                     }
 
-                    LINE.Append(String.Format("- *{0}* ({1}|{2})", item.Item1, item.Item3, item.Item2));
+                    LINE.Append(String.Format("*{0}* ({1}|{2})", item.Item1, item.Item3, item.Item2));
 
                     COUNT++;
-                }
-
-                if (LINE.Length > 0)
-                {
-                    LINE.Append("\r\n");
                 }
 
                 int MIN = 0;
 
                 if (bag.Total > MIN)
                 {
-                    if (OUTPUT.Length > 0)
+                    lock (OUTPUT)
                     {
-                        OUTPUT.Append("\r\n");
-                    }
+                        if (OUTPUT.Length > 0)
+                        {
+                            OUTPUT.Append("\r\n");
+                        }
 
-                    OUTPUT.Append(String.Format("~ **{0}** ({1})",
-                        bag.Key, bag.Total, COUNT));
+                        OUTPUT.Append(String.Format("~ **{0}** ({1})",
+                            bag.Key, bag.Total, COUNT));
+
+                        if (LINE.Length > 0)
+                        {
+                            OUTPUT.AppendFormat(" - {0}", LINE.ToString());
+                        }
+                    }
                 }
 
-            }
+            });            
               
-            File.WriteAllText("..\\DATA\\LA.MD", OUTPUT.ToString());
+            File.WriteAllText("..\\DATA\\LA.md", OUTPUT.ToString());
 
             Console.WriteLine("Done.");
         }
