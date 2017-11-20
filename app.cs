@@ -65,8 +65,53 @@ namespace Bags
                     case 'E': return "E";
                     case 'I': return "I";
                     case 'O': return "O";
-                    case 'U': return "V";
+                    case 'U': return "U";
                     case 'Y': return "Y";
+
+                        
+                    /*
+                     */
+
+                    case 'â': return "a";
+                    case 'ê': return "e";
+                    case 'î': return "i";
+                    case 'ô': return "o";
+                    case 'û': return "u";
+                    case 'Â': return "A";
+                    case 'Ê': return "E";
+                    case 'Î': return "I";
+                    case 'Ô': return "O";
+                    case 'Û': return "U";
+
+                    /*
+                     */
+
+                    case 'à': return "a";
+                    case 'è': return "e";
+                    case 'ì': return "i";
+                    case 'ò': return "o";
+                    case 'ù': return "u";
+                    case 'À': return "A";
+                    case 'È': return "E";
+                    case 'Ì': return "I";
+                    case 'Ò': return "O";
+                    case 'Ù': return "U";
+
+                    /*
+                     */
+
+                    case 'á': return "a";
+                    case 'é': return "e";
+                    case 'í': return "i";
+                    case 'ó': return "o";
+                    case 'ú': return "v";
+                    case 'ý': return "y";
+                    case 'Á': return "A";
+                    case 'É': return "E";
+                    case 'Í': return "I";
+                    case 'Ó': return "O";
+                    case 'Ú': return "U";
+                    case 'Ý': return "Y";                        
 
                     /*
                      */
@@ -100,21 +145,31 @@ namespace Bags
                     case 'Ū': return "U";
                     case 'Ȳ': return "Y";
 
-                    /*
-                     */
-
-                    case 'j': return "i";
-                    case 'J': return "I";
-                    case 'v': return "u";
-                    case 'V': return "V";
                 }
 
                 return c.ToString();
             };
 
+            Func<string, string> Change = (glyph) =>
+            {
+                switch (glyph)
+                {
+                    case "j": return "i";
+                    case "J": return "I";
+                    case "v": return "u";
+                    case "U": return "V";
+                }
+
+                return glyph;
+            };
+
             for (int i = 0; i < s.Length; i++)
             {
-                r.Append(Convert(s[i]));
+                var glyph = Convert(s[i]);
+
+                glyph = Change(glyph);
+
+                r.Append(glyph);
             }
             
             return r.ToString();
@@ -286,7 +341,9 @@ namespace Bags
 
                 return c;
 
-            });            
+            });
+
+            int MIN = 3;
 
             var OUTPUT = new StringBuilder();
 
@@ -296,9 +353,14 @@ namespace Bags
 
                 bag.ForEach((key, count) =>
                 {
-                    Bag lex;
+                    Bag lex = null;
 
-                    if (M.TryGetValue(key, out lex))
+                    if (!M.TryGetValue(key, out lex))
+                    {
+                        lex = null;
+                    }
+
+                    if (lex != null && lex.Total > MIN)
                     {
                         SORT.Add(new Tuple<String, Int32, Int32>(key, count, lex.Total));
                     }
@@ -354,8 +416,6 @@ namespace Bags
 
                     COUNT++;
                 }
-
-                int MIN = 0;
 
                 if (bag.Total > MIN)
                 {
