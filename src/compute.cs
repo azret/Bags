@@ -9,13 +9,18 @@
             get;
         }
 
-        public Int32 Total
+        public Int32 No
+        {
+            get;
+        }
+
+        public Int32 Weight
         {
             get;
             set;
         }
 
-        public Bag(String key)
+        public Bag(String key, Int32 no)
         {
             if (key == null)
             {
@@ -23,18 +28,25 @@
             }
 
             Key = key;
+
+            if (no < 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(no));
+            }
+
+            No = no;
         }
 
         Dictionary<String, Int32> _Items = null;
 
-        public void Add(Bag src)
+        public void Add(Bag src, Int32 weight)
         {
             if (src == null || src.Key != Key)
             {
                 throw new ArgumentException();
             }
 
-            Total += src.Total;
+            Weight += weight;
 
             if (src._Items != null)
             {
@@ -80,6 +92,16 @@
             }
         }
 
+        public void Clear()
+        {
+            if (_Items != null)
+            {
+                _Items.Clear();
+            }
+
+            _Items = null;
+        }
+
         public bool Has(String key)
         {
             if (_Items != null)
@@ -109,8 +131,8 @@
     }
 
     public static class Bags
-    {                
-        public static IList<Bag> Compute(IList<String> doc, int WINDOW = 3, Func<String, String, int, bool> take = null)
+    {
+        public static IList<Bag> Compute(this IList<String> doc, int WINDOW = 3, Func<String, String, int, bool> take = null)
         {
             if (WINDOW < 0 || WINDOW > 13)
             {
@@ -161,7 +183,7 @@
                             {
                                 distance = focus - neighbor;
                             }
-                            
+
                             String NEIGHBOR = doc[neighbor];
 
                             if (take != null)
@@ -185,9 +207,9 @@
 
             for (int i = 0; i < Axis.Length; i++)
             {
-                Bag bag = new Bag(Axis[i].Key)
+                Bag bag = new Bag(Axis[i].Key, i)
                 {
-                    Total = Axis[i].Count
+                    Weight = Axis[i].Count
                 };
 
                 if (CoOccurrences != null && CoOccurrences[i] != null)

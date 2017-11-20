@@ -12,3 +12,5 @@
 *.local
 /src/whitakar
 /data/LA.md
+/graph
+/data/LA.json

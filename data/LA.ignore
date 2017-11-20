@@ -33,8 +33,6 @@ st
 vae, vae
 vah
 
-ait aio
-
 non sic iam ac adque alii an annon antequam ast at ateque atque atqui aut autem 
 cum donec dum dummodo enim ergo et ed etenim etiamsi etiamtum etiamtunc etsi 
 nam namque nanque ne nec necdum necne necunde nedum neque nequedum neve ni nisi nonnisi 
@@ -52,22 +50,27 @@ quidem quodam quiddam
 
 cur num qua quando quare equid
 quemadmodum quantum
-qui quid quo quomodo ubi unde
+qui quid quo quomodo
 
-modo vero tum ubi ibi adhuc ideo tantum deinde ideo satis
+#
+
+ubi unde modo vero tum ubi ibi adhuc ideo tantum deinde ideo sat satis nunc tam 
+causa magis primum satis semper hinc saepe huc tunc multa numquam minus olim 
+opus prius haud maxime licet simul solum tamquam
+
+#
 
 a ab abs absque
 coram cum de e ex
-prae pro tenus
-
-in sub subter super
-
-ad adversus adversum ante
+prae pro tenus in sub subter super ad 
+adversus adversum ante
 apud circa circum circiter contra
 erga extra infra
 inter intra iuxta
-ob per post praeter prope propter
+ob per post praeter prope propter propterea
 secundum supra trans ultra versus uersus
+
+#
 
 ego ego	tu
 mei	tui	sui
@@ -120,7 +123,7 @@ tuum	tuam	tuum	tuos	tuas	tua
 tuo	tua	tuo	tuis
 tue	tua	tuum	tui	tuae	tua
 
-is	ea	id		ei, ii	eae	ea
+is	ea	id it		ei, ii	eae	ea
 eius  ejus	eorum	earum	eorum
 ei	eis  iis
 eum	eam	id	eos	eas	ea
@@ -144,7 +147,7 @@ ipsi	ipsis
 ipsum	ipsam	ipsum	ipsos	ipsas	ipsa
 ipso	ipsa	ipso	ipsis
 
-hic	haec	hoc		hi	hae	haec
+hic	haec	hoc		hi hii	hae	haec
 huius, hujus	horum	harum	horum
 huic	his
 hunc	hanc	hoc	hos	has	haec
@@ -169,7 +172,7 @@ quamlibet quanta quanto quot
 
 quadam quaedam quicquam quaeque quale qualitatem 
 	quibusdam quin quoddam qualia quasdam quidque quisquis 
-quodque quonam>
+quodque quonam quosdam quidni equid
 
 quis	quid		qui	quae
 cuius   cujus	quorum	quarum	quorum
@@ -177,7 +180,7 @@ cui	quibus
 quem	quid	quos	quas	quae
 quo	quibus
 
-qui	quae	quod		qui	quae
+qui	quae	quod	quoad		qui	quae
 cuius  cujus	quorum	quarum	quorum
 cui	quibus
 quem	quam	quod	quos	quas	quae
@@ -218,27 +221,6 @@ potuerim	potueris	potuerit	potuerimus	potueritis	potuerint
 potuissem	potuisses	potuisset	potuissemus	potuissetis	potuissent
 posse	potuisse
 potens
-
-res	res
-rei	rerum
-rei	rebus
-rem	res
-re	rebus
-res	res
-
-omnis	omne		omnes	omnia
-omnis	omnium
-omni	omnibus
-omnem	omne	omnes	omnia
-omni	omnibus
-omnis	omne	omnes	omnia
-
-nullus	nulla	nullum		nulli	nullae	nulla
-nullius	nullorum	nullarum	nullorum
-nulli	nullis
-nullum	nullam	nullum	nullos	nullas	nulla
-nullo	nulla	nullo	nullis
-nulle	nulla	nullum	nulli	nullae	nulla
 
 habeo	habes	habet	habemus	habetis	habent
 habebam	habebas	habebat	habebamus	habebatis	habebant
@@ -297,6 +279,8 @@ factum	facta
 facto	factis
 factum	facta
 
+ait aio
+
 dico	dicam	 	dicebam	dicerem	dicam	 
 dicis	dicas	dic 	dicebas	diceres	dices	dicito 
 dicit	dicat	 	dicebat	diceret	dicet	dicito 
@@ -329,8 +313,13 @@ dictum	dictam	dictum	dictos	dictas	dicta
 dicto	dicta	dicto	dictis
 dicte	dicta	dictum	dicti	dictae	dicta
 
-nihil nil nichil
-nilum nihilum nihilo
+inquam	inquis	inquit	inquimus	inquitis	inquiunt
+inquiebat	—	—	—
+	—	inquies	inquiet	—	—	—
+inquii	inquisti	inquit	—	—	—
+	—	—	inquiat	—	—	—
+	inque	—	—	—	—
+inquito	inquito	—	—	— inquiens	
 
 totus	tota	totum		toti	totae	tota
 totius	totorum	totarum	totorum
@@ -340,30 +329,50 @@ toto	tota	toto	totis
 tote	tota	totum	toti	totae	tota
 tot 
 
-inquam	inquis	inquit	inquimus	inquitis	inquiunt
-inquiebat	—	—	—
-	—	inquies	inquiet	—	—	—
-inquii	inquisti	inquit	—	—	—
-	—	—	inquiat	—	—	—
-	inque	—	—	—	—
-inquito	inquito	—	—	— inquiens	
 
 #
 
-nemo	    
-nullius	
-nemĭni	
-nemĭnem	
-nullo	
-nemo
+nihil nil nichil
+nilum nihilum nihilo
 
-nemo	
-nemĭnis	
-nemĭni	
-nemĭnem	
-nemĭne	
-nemo
+ūnus	ūna	ūnum		ūnī	ūnae	ūna
+ūnīus	ūnōrum	ūnārum	ūnōrum
+ūnī	ūnīs
+ūnum	ūnam	ūnum	ūnōs	ūnās	ūna
+ūnō	ūnā	ūnō	ūnīs
+ūne	ūna	ūnum	ūnī	ūnae	ūna
 
-nunc tam causa magis primum satis 
-semper hinc saepe huc tunc multa numquam minus olim 
-opus prius haud maxime licet simul solum 
+res	res
+rei	rerum
+rei	rebus
+rem	res
+re	rebus
+res	res
+
+omnis	omne		omnes	omnia
+omnis	omnium
+omni	omnibus
+omnem	omne	omnes	omnia
+omni	omnibus
+omnis	omne	omnes	omnia
+
+nullus	nulla	nullum		nulli	nullae	nulla
+nullius	nullorum	nullarum	nullorum
+nulli	nullis
+nullum	nullam	nullum	nullos	nullas	nulla
+nullo	nulla	nullo	nullis
+nulle	nulla	nullum	nulli	nullae	nulla
+
+nūllus	nūlla	nūllum		nūllī	nūllae	nūlla
+nūllīus	nūllōrum	nūllārum	nūllōrum
+nūllī	nūllīs
+nūllum	nūllam	nūllum	nūllōs	nūllās	nūlla
+nūllō	nūllā	nūllō	nūllīs
+nūlle	nūlla	nūllum	nūllī	nūllae	nūlla
+
+nēmō
+nēminis
+nēminī
+nēminem
+nēmine
+nēmō
