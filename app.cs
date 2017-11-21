@@ -52,7 +52,7 @@ static class App
 
             new string[]
             {
-                    "..\\DATA\\LA\\prose\\"
+                    "..\\DATA\\LA\\"
             }
 
         );
@@ -100,6 +100,15 @@ static class App
                     return;
                 }
 
+                /* Do not take single letter entries unless they start with upper case */
+
+                if (s.Length == 1)
+                {
+                    if (char.ToUpperInvariant(s[0]) != s[0]) {
+                        return;
+                    } 
+                }
+                
                 if (s.EndsWith("que") && s.Length > "que".Length)
                 {
                     s = s.Substring(0, s.Length - "que".Length);
@@ -127,6 +136,7 @@ static class App
 
                 var bags = Bags.Compute(DOC, 5, (FOCUS, NEIGHBOR, Δ) =>
                 {
+
                     if (FOCUS[0] == char.ToUpperInvariant(FOCUS[0]))
                     {
                         if (NEIGHBOR[0] != char.ToUpperInvariant(NEIGHBOR[0]))
@@ -169,11 +179,6 @@ static class App
         return lexicon;
     }
 
-    /// <summary>
-    /// Reduces the size of the specified lexicon.
-    /// </summary>
-    /// <param name="weight">Minimum weight of the entry to be included.</param>
-    /// <param name="limit">Maximum number of entries in the window.</param>
     static void Reduce(this IDictionary<string, Bag> lexicon, System.Language.IOrthography lang, int weight, int limit)
     {
         var reduce = new HashSet<string>(); var depends = new HashSet<string>();
