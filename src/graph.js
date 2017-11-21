@@ -1,38 +1,44 @@
-﻿function Compare(s, comparand) {
-    if (s.length > comparand.length) {
-        return +1;
-    }
-    else if (s.length < comparand.length) {
-        return -1;
-    }
-    var l = s.length;
-    for (var i = 0; i < l; i++) {
-        if (s[i] > comparand[i]) {
-            return +1;
-        }
-        else if (s[i] < comparand[i]) {
-            return -1;
-        }
-    }
-    return 0;
-}
+﻿; (function () {
 
-function Find(graph, label) {
-    var found = null;
-    let low = 0, high = graph.length - 1;
-    while (low <= high) {
-        let i = (low + high) >> 1, p = graph[i];
-        const c = Compare(p.l, label);
-        if (c < 0) {
-            low = i + 1;
-        }
-        else {
-            high = i - 1;
+    "use strict";
 
-            if (c == 0) {
-                found = p;
+    function Compare(s, c) {
+        var l = Math.min(s.length, c.length);
+        for (var i = 0; i < l; i++) {
+            if (s[i] > c[i]) {
+                return +1;
+            }
+            else if (s[i] < c[i]) {
+                return -1;
             }
         }
+        if (s.length > c.length) {
+            return +1;
+        }
+        else if (s.length < c.length) {
+            return -1;
+        }
+        return 0;
     }
-    return found;
-}
+
+    function Find(g, s) {
+        var found = null;
+        let low = 0, high = g.length - 1;
+        while (low <= high) {
+            let i = (low + high) >> 1, p = g[i];
+            const c = Compare(p.l, s);
+            if (c < 0) {
+                low = i + 1;
+            }
+            else {
+                high = i - 1;
+
+                if (c == 0) {
+                    found = p;
+                }
+            }
+        }
+        return found;
+    }
+
+}());

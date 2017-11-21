@@ -48,11 +48,11 @@ static class App
          * 
          **/
 
-        IDictionary<String, Bag> lexicon = Build(lang, exclude,
+        IDictionary<String, Bag> lex = Build(lang, exclude,
 
             new string[]
             {
-                    "..\\DATA\\LA\\cato\\"
+                    "..\\DATA\\LA\\prose\\"
             }
 
         );
@@ -63,7 +63,7 @@ static class App
          * 
          **/
 
-        lexicon.Reduce(lang,
+        lex.Reduce(lang,
 
             /** 
              */
@@ -77,49 +77,10 @@ static class App
 
         );
 
-        var graph = Graph.Create(lexicon);
+        var g = Graph.Create(lex);
         
-        var OUTPUT = new StringBuilder();
-
-        foreach (var node in graph)
-        {
-            StringBuilder LINE = new StringBuilder(); int COUNT = 0;
-
-            for (int j = 0; node.Links != null && j < node.Links.Length; j++)
-            {
-                var link = node.Links[j];
-
-                if (LINE.Length > 0)
-                {
-                    LINE.Append(", ");
-                }
-
-                string label = graph[link.No].Label;
-
-                LINE.Append(String.Format("*{0}* ({1}|{2})", label, link.Weight, link.No));
-
-                COUNT++;
-            }
-
-            if (OUTPUT.Length > 0)
-            {
-                OUTPUT.Append("\r\n");
-            }
-
-            OUTPUT.Append(String.Format("~ **{0}** ({1})",
-                node.Label, node.Weight, COUNT));
-
-            if (LINE.Length > 0)
-            {
-                OUTPUT.AppendFormat(" - {0}", LINE.ToString());
-            }
-
-        }
-
-        File.WriteAllText("..\\DATA\\LA.md", OUTPUT.ToString());
-
-
-        graph.Save(@"D:\Bags\graph\graph.json");
+        g.MD("..\\DATA\\LA.md");
+        g.JSON("..\\DATA\\LA.json");
 
         Console.WriteLine("Done.");
     }
@@ -241,6 +202,7 @@ static class App
 
             SORT.Sort((a, b) =>
             {
+
                 int c = 0;
 
                 if (a.Item2 > b.Item2)
@@ -312,7 +274,7 @@ namespace System.Language
 {
     public interface IOrthography
     {
-        int Compare(string s, string comparand);
+        int Compare(string s, string c);
         string Convert(string s);
         bool IsLegible(string s);
     }
@@ -475,29 +437,29 @@ namespace System.Language
                 return true;
             }
 
-            public int Compare(string s, string comparand)
+            public int Compare(string s, string c)
             {
-                if (s.Length > comparand.Length)
-                {
-                    return +1;
-                }
-                else if (s.Length < comparand.Length)
-                {
-                    return -1;
-                }
+                int l = Math.Min(s.Length, c.Length);
 
-                int L = s.Length;
-
-                for (int i = 0; i < L; i++)
+                for (int i = 0; i < l; i++)
                 {
-                    if (s[i] > comparand[i])
+                    if (s[i] > c[i])
                     {
                         return +1;
                     }
-                    else if (s[i] < comparand[i])
+                    else if (s[i] < c[i])
                     {
                         return -1;
                     }
+                }
+
+                if (s.Length > c.Length)
+                {
+                    return +1;
+                }
+                else if (s.Length < c.Length)
+                {
+                    return -1;
                 }
 
                 return 0;

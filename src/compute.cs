@@ -142,11 +142,11 @@
             /*
              */
 
-            IDictionary<String, Token> M = Unique(doc);
+            IDictionary<String, Token> lex = Unique(doc);
 
-            var Axis = new Token[M.Count];
+            var Axis = new Token[lex.Count];
 
-            foreach (var i in M)
+            foreach (var i in lex)
             {
                 Axis[i.Value.Axis] = i.Value;
             }
@@ -154,15 +154,15 @@
             /*
              */
 
-            int[][] CoOccurrences = null;
+            int[][] MATRIX = null;
 
             if (WINDOW > 0)
             {
-                CoOccurrences = new int[Axis.Length][];
+                MATRIX = new int[Axis.Length][];
 
                 for (int i = 0; i < Axis.Length; i++)
                 {
-                    CoOccurrences[i] = new int[Axis.Length];
+                    MATRIX[i] = new int[Axis.Length];
                 }
 
                 for (int focus = 0; focus < doc.Count; focus++)
@@ -196,7 +196,7 @@
 
                             if (distance > 0)
                             {
-                                CoOccurrences[M[FOCUS].Axis][M[NEIGHBOR].Axis] += (WINDOW - distance);
+                                MATRIX[lex[FOCUS].Axis][lex[NEIGHBOR].Axis] += (WINDOW - distance);
                             }
                         }
                     }
@@ -212,13 +212,13 @@
                     Weight = Axis[i].Count
                 };
 
-                if (CoOccurrences != null && CoOccurrences[i] != null)
+                if (MATRIX != null && MATRIX[i] != null)
                 {
                     ISet<int> vector = new HashSet<int>();
 
                     for (int j = 0; j < Axis.Length; j++)
                     {
-                        if (CoOccurrences[i][j] > 0)
+                        if (MATRIX[i][j] > 0)
                         {
                             vector.Add(j);
                         }
@@ -228,7 +228,7 @@
                     {
                         foreach (var j in vector)
                         {
-                            bag.Add(Axis[j].Key, CoOccurrences[i][j]);
+                            bag.Add(Axis[j].Key, MATRIX[i][j]);
                         }
                     }
                 }
