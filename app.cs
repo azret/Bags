@@ -96,8 +96,6 @@ static class App
 
                 string label = graph[link.No].Label;
 
-                Debug.Assert(link.Label == label);
-
                 LINE.Append(String.Format("*{0}* ({1}|{2})", label, link.Weight, link.No));
 
                 COUNT++;

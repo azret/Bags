@@ -43,6 +43,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include=".gitignore" />
+    <None Include="src\graph.js" />
   </ItemGroup>
   <ItemGroup>
     <None Include="LICENSE" />

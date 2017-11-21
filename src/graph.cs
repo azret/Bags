@@ -1,9 +1,8 @@
 ﻿namespace System.Text
 {
     using System.Collections.Generic;
-    using System.IO;
 
-    public static class Graph
+    public static partial class Graph
     {
         public class Link
         {
@@ -14,12 +13,6 @@
             }
 
             public int Weight
-            {
-                get;
-                set;
-            }
-
-            public string Label
             {
                 get;
                 set;
@@ -51,77 +44,6 @@
                 get;
                 set;
             }
-        }
-
-        public static IList<Node> Create(this IDictionary<string, Bag> lexicon)
-        {
-            var graph = new List<Node>();
-
-            // Re-shape the bag of words dictionary into a graph...
-
-            foreach (var entry in lexicon)
-            {
-                Node node = null;
-
-                graph.Add(node = new Node()
-                {
-                    No = entry.Value.No,
-                    Label = entry.Value.Key,
-                    Weight = entry.Value.Weight
-                });
-
-                var links = new List<Link>();
-
-                entry.Value.ForEach((key, count) =>
-                {
-                    links.Add(new Link()
-                    {
-                        No = lexicon[key].No,
-                        Label = key,
-                        Weight = count
-                    });
-
-                });
-                
-                node.Links = links.ToArray();                
-            }
-
-            // Sort the nodes ordinally. It is important that the
-            //      compare function is simple at portable...
-             
-            graph.Sort((i, comparand) => Compare(i.Label, comparand.Label));
-            
-            var swap = new Dictionary<int, Node>();
-
-            for (int i = 0; i < graph.Count; i++)
-            {
-                var no = graph[i].No;
-
-                Node node;
-
-                if (swap.TryGetValue(no, out node))
-                {
-                    throw new InvalidOperationException();
-                }
-
-                node = graph[i]; swap[no] = node;
-
-                // Create a zero-based index based on the new sort order...
-
-                node.No = i;
-            }
-
-            for (int i = 0; i < graph.Count; i++)
-            {
-                for (int j = 0; graph[i].Links != null && j < graph[i].Links.Length; j++)
-                {
-                    // Re-reference into new sort order...
-
-                    graph[i].Links[j].No = swap[graph[i].Links[j].No].No;
-                }
-            }            
-
-            return graph;
         }
 
         public static int Compare(string s, string comparand)
@@ -182,82 +104,164 @@
             }
 
             return found;
-        }
+        }        
+    }
+}
 
+namespace System.Text
+{
+    using System.Collections.Generic;
+
+    public static partial class Graph
+    { 
+        public static IList<Node> Create(this IDictionary<string, Bag> lexicon)
+        {
+            var g = new List<Node>();
+
+            foreach (var i in lexicon)
+            {
+                List<Link> links = new List<Link>();
+
+                i.Value.ForEach((key, count) =>
+                {
+                    links.Add(new Link()
+                    {
+                        No = lexicon[key].No,
+                        Weight = count
+                    });
+                });
+
+                Node n = n = new Node()
+                {
+                    No = i.Value.No,
+                    Weight = i.Value.Weight,
+                    Label = i.Value.Key,
+                };
+
+                g.Add(n);
+
+                if (links.Count > 0)
+                {
+                    n.Links = links.ToArray();
+                }
+            }
+
+            g.Sort(
+
+                (s, comparand) => {
+
+                    return Compare(s.Label, comparand.Label);
+                }
+
+            );
+
+            IDictionary<int, Node> swap = new Dictionary<int, Node>();
+
+            for (int i = 0; i < g.Count; i++)
+            {
+                swap[g[i].No] = g[i]; g[i].No = i;
+            }
+
+            for (int i = 0; i < g.Count; i++)
+            {
+                for (int j = 0; g[i].Links != null && j < g[i].Links.Length; j++)
+                {
+                    g[i].Links[j].No = swap[g[i].Links[j].No].No;
+                }
+            }
+
+            return g;
+        }
+    }
+}
+
+namespace System.Text
+{
+    using System.Collections.Generic;
+    using System.IO;
+
+    public static partial class Graph
+    {
         public static void Save(this IList<Node> graph, string file)
         {
-            using (var writer = File.Open(file, FileMode.Create, FileAccess.Write, FileShare.None))
+            Action<Stream, string> Emit = (stream, s) =>
             {
-                writer.Write("{\r\n \"graph\": [");
+                byte[] bytes = Encoding.UTF8.GetBytes(s);
 
-                int written = 0;
+                if (bytes != null && bytes.Length > 0)
+                {
+                    stream.Write(bytes, 0, bytes.Length);
+                }
+            };
+
+            Func<string, string> Escape = (s) =>
+            {
+                StringBuilder b = new StringBuilder();
+
+                for (int i = 0; i < s.Length; i++)
+                {
+                    char c = s[i];
+
+                    if (c == '\"')
+                    {
+                        b.Append("\\");
+                    }
+
+                    b.Append(c);
+                }
+
+                return b.ToString();
+            };
+            
+            using (var w = File.Open(file, FileMode.Create, FileAccess.Write, FileShare.None))
+            {
+                Emit(w, "{\n\"graph\":[");
+
+                int nodes = 0;
 
                 for (int i = 0; i < graph.Count; i++)
                 {
-                    var node = graph[i];
+                    var node = graph[i]; var links = node.Links;
 
-                    if (written > 0)
+                    Emit(w, (nodes > 0) ? ",{" : "\n{");
+
+                    nodes++;
+
+                    Emit(w, $"\"i\":{node.No},\"l\":\"{Escape(node.Label)}\",\"w\":{node.Weight}");
+
+                    if (links != null && links.Length > 0)
                     {
-                        writer.Write(", { ");
-                    }
-                    else
-                    {
-                        writer.Write("\r\n  { ");
-                    }
+                        Emit(w, $",\"n\":[");
 
-                    written++;
+                        int c = 0;
 
-                    writer.Write($"\"id\": {node.No}, ");
-                    writer.Write($"\"l\": \"{node.Label}\", ");
-                    writer.Write($"\"w\": {node.Weight}");
-
-                    if (node.Links != null && node.Links.Length > 0)
-                    {
-                        writer.Write($", \"n\": [");
-
-                        int links = 0;
-
-                        for (int j = 0; node.Links != null && j < node.Links.Length; j++)
+                        for (int j = 0; j < links.Length; j++)
                         {
-                            var link = node.Links[j];
+                            var link = links[j];
 
-                            if (links > 0)
+                            if (c > 0)
                             {
-                                writer.Write(",\r\n     { ");
+                                Emit(w, (j % 7 != 0) ? ",{" : ",\n{");
                             }
                             else
                             {
-                                writer.Write("\r\n     { ");
+                                Emit(w, "{");
                             }
 
-                            links++;
+                            c++;
 
-                            writer.Write($"\"id\": {link.No}, ");
-                            writer.Write($"\"w\": {link.Weight}}}");
+                            Emit(w, $"\"i\":{link.No},\"w\":{link.Weight}}}");
                         }
 
-                        writer.Write($"\r\n  ]\r\n");
+                        Emit(w, $"\n]}}");
                     }
                     else
                     {
-                        writer.Write($"\r\n");
+                        Emit(w, $"\n}}");
                     }
-
-                    writer.Write(" }");
-
                 }
 
-                writer.Write("\r\n ]\r\n}");
-            }
-        }
-
-        static void Write(this Stream stream, string value)
-        {
-            byte[] bytes = Encoding.UTF8.GetBytes(value);
-
-            if (bytes != null && bytes.Length > 0)
-            {
-                stream.Write(bytes, 0, bytes.Length);
+                Emit(w, "]}");
             }
         }
     }
