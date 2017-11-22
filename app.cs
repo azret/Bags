@@ -97,11 +97,50 @@ static class App
 
         g.MD("..\\DATA\\LA.md");
         // g.JSON("..\\DATA\\LA.json");
-        g.JSON("D:\\Latin\\graph.json");
+        g.JSON("D:\\Latin\\17-7.json");
 
         Console.WriteLine("Done.");
     }
-    
+
+    static Dictionary<char, int> Numerals = new Dictionary<char, int>() { {'i', 1}, {'u', 5}, {'x', 10}, {'l', 50}, {'c', 100}, {'d', 500}, {'m', 1000} };
+    static int? RomanToInteger(string s)
+    {
+        int number = 0;
+        for (int i = 0; i < s.Length; i++) {
+            if (!Numerals.ContainsKey(s[i])) {
+                return null;
+            }
+            if (i + 1 < s.Length && !Numerals.ContainsKey(s[i + 1])) {
+                return null;
+            }
+            if (i + 1 < s.Length && Numerals[s[i]] < Numerals[s[i + 1]]) {
+                number -= Numerals[s[i]];
+            } else {
+                number += Numerals[s[i]];
+            }
+        }
+        return number;
+    }
+    static string IntegerToRoman(int number)
+    {
+        if ((number < 0) || (number > 3999)) return null;
+        if (number < 1) return string.Empty;
+        if (number >= 1000) return "m" + IntegerToRoman(number - 1000);
+        if (number >= 900) return "cm" + IntegerToRoman(number - 900);
+        if (number >= 500) return "d" + IntegerToRoman(number - 500);
+        if (number >= 400) return "cd" + IntegerToRoman(number - 400);
+        if (number >= 100) return "c" + IntegerToRoman(number - 100);
+        if (number >= 90) return "xc" + IntegerToRoman(number - 90);
+        if (number >= 50) return "l" + IntegerToRoman(number - 50);
+        if (number >= 40) return "xl" + IntegerToRoman(number - 40);
+        if (number >= 10) return "x" + IntegerToRoman(number - 10);
+        if (number >= 9) return "ix" + IntegerToRoman(number - 9);
+        if (number >= 5) return "u" + IntegerToRoman(number - 5);
+        if (number >= 4) return "iu" + IntegerToRoman(number - 4);
+        if (number >= 1) return "i" + IntegerToRoman(number - 1);
+        return null;
+    }
+
     static IDictionary<string, Bag> Build(int WINDOW, System.Language.IOrthography lang, Func<string, string> support, ISet<string> ignore, string[] paths, string search = "*.*")
     {
         Dictionary<String, Bag> lexicon = new Dictionary<String, Bag>();
@@ -125,29 +164,71 @@ static class App
                         return;
                     } 
                 }
-
-                /* Do not take single letter entries */
-
-                if (s.Length == 1)
-                {
-                    return;
-                }
-
-                /* Lower case ii, xx, kk etc..  */
+                 
+                /* Do not take roman numerals  */
 
                 if (s.Length > 1 && char.ToUpperInvariant(s[0]) != s[0])
                 {
-                    bool different = false;
-
+                    bool same = true;
                     for (int i = 1; i < s.Length; i++)
                     {
                         if (char.ToUpperInvariant(s[i]) != char.ToUpperInvariant(s[i - 1])) {
-                            different = true;
+                            same = false;
                             break;
                         }
                     }
+                    if (s != "ui" && s != "uim" && s != "uix" && s != "uii"
+                           && s != "lux" && s != "lum"
+                           && s != "cum"
+                           && s != "cui"
+                           && s != "mum"
+                           && s != "mi"
+                           && s != "id"
+                           && s != "mix"
+                           && s != "diu"
+                           && s != "dix"
+                           && s != "di"
+                           && s != "dii"
+                           && s != "dux" && s != "dum")
+                    {
+                        var n = RomanToInteger(s);
+                        if (n.HasValue) {
+                            var c = IntegerToRoman(n.Value);
+                            if (c == s) {
+                                return;
+                            }
+                        }
+                    }
+                    if (same) {
+                        return;
+                    }                    
+                }
 
-                    if (!different) {
+                /* Must have at least one vowel
+                 
+                    - Abbreviates should be capitalized .
+                    - Foreign words might be ignored which is a good side effect.
+                                     
+                 */
+
+                if (s.Length > 1 && char.ToUpperInvariant(s[0]) != s[0])
+                {
+                    int vowels = 0;
+                    for (int i = 0; i < s.Length; i++)
+                    {
+                        switch (s[i])
+                        {
+                            case 'a':
+                            case 'e':
+                            case 'i':
+                            case 'o':
+                            case 'u':
+                                vowels++;
+                                break;
+                        } 
+                    }
+                    if (vowels <= 0)
+                    {
                         return;
                     }
                 }
