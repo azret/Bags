@@ -70,7 +70,7 @@ static class App
 
             new string[]
             {
-                    "..\\DATA\\LA\\"
+                    "..\\DATA\\LA\\classical\\"
             }
 
         );
