@@ -354,7 +354,7 @@ namespace System.Text
             
             using (var w = File.Open(file, FileMode.Create, FileAccess.Write, FileShare.None))
             {
-                Emit(w, "{\n\"graph\":[");
+                Emit(w, $"{{\n\"c\": {g.Count}, \"g\":[");
 
                 int n = 0;
 
@@ -378,21 +378,40 @@ namespace System.Text
                         {
                             var link = links[j];
 
+                            // f.1.1
+
+                            //if (c > 0)
+                            //{
+                            //    Emit(w, (j % 7 != 0) ? ",{" : ",\n{");
+                            //}
+                            //else
+                            //{
+                            //    Emit(w, "{");
+                            //}
+
+                            //c++;
+
+                            //Emit(w, $"\"i\":{link.No},\"w\":{link.Weight}}}");
+
+                            // d.1.1
+
                             if (c > 0)
                             {
-                                Emit(w, (j % 7 != 0) ? ",{" : ",\n{");
+                                Emit(w, ",");
                             }
                             else
                             {
-                                Emit(w, "{");
+                                Emit(w, "");
                             }
 
                             c++;
 
-                            Emit(w, $"\"i\":{link.No},\"w\":{link.Weight}}}");
+                            Emit(w, $"{link.No}");
+
+
                         }
 
-                        Emit(w, $"\n]}}");
+                        Emit(w, $"]}}");
                     }
                     else
                     {

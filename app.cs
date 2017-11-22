@@ -43,12 +43,30 @@ static class App
             StringComparer.InvariantCultureIgnoreCase
 
         );
+       
+        Grammar LA = new Grammar();
+
+        LA.DictionaryPath = "..\\src\\whitakar";
+
+        LA.LOAD();
+         
+
+        int OCCURS = 3; int DIMENSIONS = 17; int WINDOW = 7;
 
         /**
          * 
          **/
 
-        IDictionary<String, Bag> lex = Build(lang, exclude,
+        IDictionary<String, Bag> lex = Build(WINDOW, lang, 
+            
+            (s) => 
+            { 
+
+                return s;
+
+            },
+            
+            exclude,
 
             new string[]
             {
@@ -56,8 +74,6 @@ static class App
             }
 
         );
-
-        int MIN = 3;
 
         /**
          * 
@@ -68,24 +84,25 @@ static class App
             /** 
              */
 
-            weight: MIN,
+            weight: OCCURS,
 
             /** 
              */
 
-            limit: 17
+            limit: DIMENSIONS
 
-        );
+        );         
 
         var g = Graph.Create(lex);
-        
+
         g.MD("..\\DATA\\LA.md");
-        g.JSON("..\\DATA\\LA.json");
+        // g.JSON("..\\DATA\\LA.json");
+        g.JSON("D:\\Latin\\graph.json");
 
         Console.WriteLine("Done.");
     }
     
-    static IDictionary<string, Bag> Build(System.Language.IOrthography lang, ISet<string> ignore, string[] paths, string search = "*.*")
+    static IDictionary<string, Bag> Build(int WINDOW, System.Language.IOrthography lang, Func<string, string> support, ISet<string> ignore, string[] paths, string search = "*.*")
     {
         Dictionary<String, Bag> lexicon = new Dictionary<String, Bag>();
 
@@ -108,7 +125,33 @@ static class App
                         return;
                     } 
                 }
-                
+
+                /* Do not take single letter entries */
+
+                if (s.Length == 1)
+                {
+                    return;
+                }
+
+                /* Lower case ii, xx, kk etc..  */
+
+                if (s.Length > 1 && char.ToUpperInvariant(s[0]) != s[0])
+                {
+                    bool different = false;
+
+                    for (int i = 1; i < s.Length; i++)
+                    {
+                        if (char.ToUpperInvariant(s[i]) != char.ToUpperInvariant(s[i - 1])) {
+                            different = true;
+                            break;
+                        }
+                    }
+
+                    if (!different) {
+                        return;
+                    }
+                }
+
                 if (s.EndsWith("que") && s.Length > "que".Length)
                 {
                     s = s.Substring(0, s.Length - "que".Length);
@@ -124,6 +167,16 @@ static class App
                     return;
                 }
 
+                if (support != null)
+                {
+                    s = lang.Convert(support(s));
+
+                    if (!lang.IsLegible(s))
+                    {
+                        return;
+                    }
+                }
+
                 if (EMIT != null)
                 {
                     EMIT(s);
@@ -134,7 +187,7 @@ static class App
             {
                 Log(Path.GetFullPath(FILE));
 
-                var bags = Bags.Compute(DOC, 5, (FOCUS, NEIGHBOR, Δ) =>
+                var bags = Bags.Compute(DOC, WINDOW, (FOCUS, NEIGHBOR, Δ) =>
                 {
 
                     if (FOCUS[0] == char.ToUpperInvariant(FOCUS[0]))
@@ -415,13 +468,16 @@ namespace System.Language
                     return glyph;
                 };
 
-                for (int i = 0; i < s.Length; i++)
+                if (s != null)
                 {
-                    var glyph = Convert(s[i]);
+                    for (int i = 0; i < s.Length; i++)
+                    {
+                        var glyph = Convert(s[i]);
 
-                    glyph = Change(glyph);
+                        glyph = Change(glyph);
 
-                    r.Append(glyph);
+                        r.Append(glyph);
+                    }
                 }
 
                 return r.ToString();

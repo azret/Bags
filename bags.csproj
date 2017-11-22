@@ -40,13 +40,17 @@
     <Compile Include="src\graph.cs" />
     <Compile Include="src\parse.cs" />
     <Compile Include="src\compute.cs" />
+    <Compile Include="src\whitakar\Converter.cs" />
+    <Compile Include="src\whitakar\Grammar.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include=".gitignore" />
+    <Content Include="src\whitakar\Example.txt" />
   </ItemGroup>
   <ItemGroup>
     <None Include="LICENSE" />
     <None Include="README.md" />
+    <None Include="src\whitakar\DICTLINE2.GEN" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
