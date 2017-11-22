@@ -149,6 +149,17 @@ static class App
 
             (TOKEN, EMIT) =>
             {
+                if (TOKEN.Length > 1)
+                {
+                    if (char.ToUpperInvariant(TOKEN[1]) != TOKEN[1])
+                    {
+                        TOKEN = TOKEN.ToLowerInvariant();
+                    }
+                }
+
+                /*
+                 */
+
                 string s = lang.Convert(TOKEN);
 
                 if (!lang.IsLegible(s))
