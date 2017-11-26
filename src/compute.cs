@@ -196,7 +196,7 @@
 
                             if (distance > 0)
                             {
-                                MATRIX[lex[FOCUS].Axis][lex[NEIGHBOR].Axis] += (WINDOW - distance);
+                                MATRIX[lex[FOCUS].Axis][lex[NEIGHBOR].Axis] += (int)Math.Exp((WINDOW - distance));
                             }
                         }
                     }

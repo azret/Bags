@@ -5,21 +5,456 @@ using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 
-static class App
-{
+static class App {
     static object SCREEN = new object();
 
-    static void Log(string msg)
-    {
-        lock (SCREEN)
-        {
+    static void Log(string msg) {
+        lock (SCREEN) {
             Console.WriteLine(msg);
         }
     }
 
-    static void Main(string[] args)
-    {
+    static bool IsVowel(char c) {
+        switch (c) {
+            case 'a': return true;
+            case 'e': return true;
+            case 'i': return true;
+            case 'o': return true;
+            case 'u': return true;
+            case 'y': return true;
+
+            case 'A': return true;
+            case 'E': return true;
+            case 'I': return true;
+            case 'O': return true;
+            case 'U': return true;
+            case 'Y': return true;
+        }
+        return false;
+    }
+
+    public static bool IsConsonant(char c) {
+        switch (c) {
+            case 'b': return true;
+            case 'c': return true;
+            case 'd': return true;
+            case 'f': return true;
+            case 'g': return true;
+            case 'h': return true;
+            case 'j': return true;
+            case 'k': return true;
+            case 'l': return true;
+            case 'm': return true;
+            case 'n': return true;
+            case 'p': return true;
+            case 'q': return true;
+            case 'r': return true;
+            case 's': return true;
+            case 't': return true;
+            case 'v': return true;
+            case 'w': return true;
+            case 'x': return true;
+            case 'z': return true;
+
+            case 'B': return true;
+            case 'C': return true;
+            case 'D': return true;
+            case 'F': return true;
+            case 'G': return true;
+            case 'H': return true;
+            case 'J': return true;
+            case 'K': return true;
+            case 'L': return true;
+            case 'M': return true;
+            case 'N': return true;
+            case 'P': return true;
+            case 'Q': return true;
+            case 'R': return true;
+            case 'S': return true;
+            case 'T': return true;
+            case 'V': return true;
+            case 'W': return true;
+            case 'X': return true;
+            case 'Z': return true;
+        }
+
+        return false;
+    }     
+
+    static string[] Syllabify(string s) {
+        int len = s.Length;
+
+        string[] b = new string[len];
+
+        int i = 0; int count = 0;
+
+        while (i < len) {
+
+            int start = i;
+
+            if (i == 0 && (s[i] == 'u' || s[i] == 'U') && (i + 1 < len)
+                            && IsVowel(s[i + 1])) {
+
+
+                i++;
+
+            } else if (i == 0 && (s[i] == 'i' || s[i] == 'I') && (i + 1 < len)
+                              && IsVowel(s[i + 1])) {
+
+
+                i++;
+            }
+
+            while (i < len && !IsVowel(s[i])) {
+
+                if ((s[i] == 'q' || s[i] == 'Q') && (i + 1 < len) &&
+                                (s[i + 1] == 'u' || s[i + 1] == 'U')) {
+
+                    i++;
+                }
+
+                i++;
+            }
+
+            if (i < len) {
+
+
+            } else {
+
+                if (count > 0) {
+
+                    b[count - 1] += (s.Substring(start, i - start));
+
+                } else {
+
+                    b[count++] = (s.Substring(start, i - start));
+
+                }
+
+                break;
+
+            }
+
+            if (i < len && IsVowel(s[i])) {
+
+                if ((s[i] == 'a' || s[i] == 'A') && (i + 1 < len) &&
+                        (s[i + 1] == 'e' || s[i + 1] == 'E')) {
+
+                    i++;
+
+                } else if ((s[i] == 'o' || s[i] == 'O') && (i + 1 < len) &&
+                          (s[i + 1] == 'e' || s[i + 1] == 'E')) {
+
+                    i++;
+                }
+
+                i++;
+
+            }
+
+            int consontants = 0;
+
+            while (i < len && !IsVowel(s[i])) {
+
+                if (consontants > 0) {
+                    break;
+                }
+
+                if ((s[i] == 'q' || s[i] == 'Q') && (i + 1 < len) &&
+                                (s[i + 1] == 'u' || s[i + 1] == 'U')) {
+
+                    break;
+                }
+
+                i++;
+
+                consontants++;
+
+            }             
+
+            b[count++] = (s.Substring(start, i - start));
+        }
+         
+        return b;
+    }
+
+    static void Main(string[] args) {         
         var lang = System.Language.Orthography.Create();
+
+        Hash grams = new Hash();
+        
+        Tokens.Parse(
+
+            new string[] {
+
+                "..\\DATA\\LA\\"
+
+            }, "*.*",
+
+            (TOKEN, EMIT) => { EMIT(lang.Convert(TOKEN.ToLowerInvariant())); },
+
+            (FILE, DOC) => {                
+
+                for (int i = 0; i < DOC.Count; i++) {
+
+                    string gram = DOC[i];
+
+                    if (gram.EndsWith("que") && !(gram == "que" || gram == "usque")) {
+
+                        gram = gram.Substring(0, gram.Length - "que".Length);
+                    }
+
+                    StringBuilder fmt = new StringBuilder();
+
+                    foreach (var syllable in Syllabify(gram)) {
+                        if (syllable == null) break;
+
+                        foreach (var c in syllable) {
+                            if (IsVowel(c) || IsConsonant(c)) {
+                            } else {
+                                fmt = null;
+                                break;
+                            }
+                        }
+
+                        if (fmt == null) break;
+
+                        if (fmt.Length > 0) {
+                            fmt.Append("·");
+                        }
+
+                        fmt.Append(syllable);
+                    }
+
+                    lock (grams) {
+                        if (fmt != null && fmt.Length > 0) {
+                            grams.inc(gram);
+                        }
+                    }
+
+
+                    /* StringBuilder two = new StringBuilder();
+
+                    for (var j = i; j < i + 2 && j < DOC.Count; j++) {
+
+                        if (two.Length > 0) {
+                            two.Append(" ");
+                        }
+
+                        two.Append(Syllabify(DOC[j]));
+                    }
+
+                    if (two.Length > 0) {
+                        lock (grams) {
+                            grams.inc(two.ToString());
+                        }
+                    } */
+
+                    /* StringBuilder three = new StringBuilder();
+
+                    for (var j = i; j < i + 3 && j < DOC.Count; j++) {
+
+                        if (three.Length > 0) {
+                            three.Append(" ");
+                        }
+
+                        three.Append(Syllabify(DOC[j]));
+                    }
+
+                    if (three.Length > 0) {
+                        lock (grams) {
+                            grams.inc(three.ToString());
+                        }
+                    } */
+
+                    /*
+                    continue;                
+
+                    if (gram == "et" || gram == "ac" || gram == "uel" || gram == "aut" || gram == "atque" 
+                                    || gram == "siue" || gram == "seu") {
+
+                        if ((i - 1 >= 0 && i - 1 < DOC.Count) && (i + 1 >= 0 && i + 1 < DOC.Count)) {
+                            lock (grams) {
+                                grams.inc($"{DOC[i - 1]} {gram} {DOC[i + 1]}");
+                            }
+                        }
+                    } 
+
+                    if (gram.EndsWith("que") && !(gram == "atque" || gram == "quoque" || gram == "neque" || gram == "itaque"
+                                || gram == "itemque" || gram == "idemque" || gram == "iamque" || gram == "itaque" || gram == "usque")) {
+
+                        if ((i - 1 >= 0 && i - 1 < DOC.Count)) {
+                            lock (grams) {
+                                grams.inc($"{DOC[i - 1]} {gram}");
+                            }
+                        }
+                    }
+
+                    if (gram == "non" && i + 3 < DOC.Count && DOC[i + 2] == "sed") {
+                        lock (grams) {
+                            grams.inc($"{gram} {DOC[i + 1]} {DOC[i + 2]} {DOC[i + 3]}");
+                        }
+                    }
+
+                    if (gram == "non" && i + 4 < DOC.Count && DOC[i + 3] == "sed") {
+                        lock (grams) {
+                            if ((DOC[i + 4] == "etiam"
+                                || DOC[i + 4] == "in"
+                                || DOC[i + 4] == "ad"
+                                || DOC[i + 4] == "a"
+                                || DOC[i + 4] == "ab"
+                                || DOC[i + 4] == "de"
+                                || DOC[i + 4] == "e"
+                                || DOC[i + 4] == "ex"
+                                || DOC[i + 4] == DOC[i + 1])                           
+                                                && i + 5 < DOC.Count) {
+
+                                grams.inc($"{gram} {DOC[i + 1]} {DOC[i + 2]} {DOC[i + 3]} {DOC[i + 4]} {DOC[i + 5]}");
+                            } else {
+                                grams.inc($"{gram} {DOC[i + 1]} {DOC[i + 2]} {DOC[i + 3]} {DOC[i + 4]}");
+                            }
+                        }
+                    }
+
+                    if (gram == "in" && i + 2 < DOC.Count && (
+                               DOC[i + 2] == "est"
+                            || DOC[i + 2] == "sunt"
+                            || DOC[i + 2] == "es"
+                            || DOC[i + 2] == "erant"
+                            || DOC[i + 2] == "erunt"
+                            || DOC[i + 2] == "fuit"
+                            || DOC[i + 2] == "sit" 
+                            || DOC[i + 2] == "fuit" 
+                            || DOC[i + 2] == "erit"
+                            || DOC[i + 2] == "erat")) {
+
+                        lock (grams) {
+                            if (i - 2 >= 0) {
+                                grams.inc($"{DOC[i - 2]} {DOC[i - 1]} {gram} {DOC[i + 1]} {DOC[i + 2]}");
+                            }
+                            else if (i - 1 >= 0) {
+                                grams.inc($"{DOC[i - 1]} {gram} {DOC[i + 1]} {DOC[i + 2]}");
+                            } else {
+                                grams.inc($"{gram} {DOC[i + 1]} {DOC[i + 2]}");
+                            }
+                        }
+                    }
+
+                    if ((gram == "esse" || gram == "fuisse") && i - 1 >= 0 && i + 1 < DOC.Count) {
+                        lock (grams) {
+                            if (i - 2 >= 0) {
+                                grams.inc($"{DOC[i - 2]} {DOC[i - 1]} {gram} {DOC[i + 1]}");
+                            } else {
+                                grams.inc($"{DOC[i - 1]} {gram} {DOC[i + 1]}");
+                            }
+                        }
+                    } */
+
+                };
+
+            });
+
+
+        List<Hash.Gram> list = new List<Hash.Gram>();
+
+        Func<string, string> reverse = (string s) => {
+
+            char[] r = new char[s.Length];
+
+            for (int i = 0; i < s.Length; i++) {
+                r[s.Length - i - 1] = s[i];
+            }
+
+            return new string(r);
+
+        };
+
+        grams.forEach((g) => {
+             
+            if (g.Count > 1) {
+
+                var r = new Hash.Gram(-1, reverse(g.ToString()));
+
+                r.SetCount(g.Count);
+
+                list.Add(r);
+
+            }
+
+        });
+
+        Func<string, string, int> forward = (string a, string b) => {
+            int l = a.Length;
+            if (a.Length > b.Length) {
+                l = b.Length;
+            }
+            for (int i = 0; i < l; i++) {
+                if (a[i] > b[i]) {
+                    return +1;
+                } else if (a[i] < b[i]) {
+                    return -1;
+                }
+            }
+            if (a.Length > b.Length) {
+                return +1;
+            } else if (a.Length < b.Length) {
+                return -1;
+            }
+            return 0;
+        };
+
+        Func<string, string, int> back = (string a, string b) => {
+            int l = a.Length;
+            if (a.Length > b.Length) {
+                l = b.Length;
+            }
+            for (int i = l - 1; i >= 0; i--) {
+                if (a[i] > b[i]) {
+                    return +1;
+                } else if (a[i] < b[i]) {
+                    return -1;
+                }
+            }
+            if (a.Length > b.Length) {
+                return +1;
+            } else if (a.Length < b.Length) {
+                return -1;
+            }
+            return 0;
+        };
+
+        list.Sort((a, b) => {
+
+            int c = b.Count - a.Count;
+
+            c = 0;
+
+            c = forward(a.ToString(), b.ToString());
+
+            if (c == 0) {
+                // c = b.Count - a.Count;
+                // c = forward(a.ToString(), b.ToString());
+            }                         
+
+            return c;
+
+        });
+
+        Action<Stream, string> Emit = (w, s) => {
+            byte[] b = Encoding.UTF8.GetBytes(s);
+            if (b != null && b.Length > 0) {
+                w.Write(b, 0, b.Length);
+            }
+        };
+
+        using (var w = File.Open("..\\DATA\\LA.grams", FileMode.Create, FileAccess.Write, FileShare.None)) {
+            for (int i = 0; i < list.Count; i++) {
+                Emit(w, $"~ {list[i].ToString()} ({list[i].Count})\r\n");
+            }
+        }
+
+        return;
+
 
         /**
          *  
@@ -27,14 +462,11 @@ static class App
 
         ISet<string> exclude = new HashSet<string>(Tokens.Parse("..\\data\\LA.ignore",
 
-            (s, f) =>
-            {
+            (s, f) => {
                 s = lang.Convert(s);
 
-                if (lang.IsLegible(s))
-                {
-                    if (f != null)
-                    {
+                if (lang.IsLegible(s)) {
+                    if (f != null) {
                         f(s);
                     }
                 }
@@ -43,13 +475,13 @@ static class App
             StringComparer.InvariantCultureIgnoreCase
 
         );
-       
+
         Grammar LA = new Grammar();
 
         LA.DictionaryPath = "..\\src\\whitakar";
 
         LA.LOAD();
-         
+
 
         int OCCURS = 3; int DIMENSIONS = 17; int WINDOW = 7;
 
@@ -57,15 +489,54 @@ static class App
          * 
          **/
 
-        IDictionary<String, Bag> lex = Build(WINDOW, lang, 
-            
-            (s) => 
-            { 
+        IDictionary<String, Bag> lex = Build(WINDOW, lang,
+
+            (s) => {
+
+                var nodes = LA.Query(s);
+
+                if (nodes != null && nodes.Next == null) {
+                    var word = LA.Locate(nodes.Entry);
+
+                    if (word != null) {
+                        if (word.Speach == Grammar.Speach.Number) {
+                            return null;
+                        }
+
+                        if (word.Speach == Grammar.Speach.Noun) {
+                            if (word.Top == null) {
+                                Grammar.Node top = null;
+
+                                LA.INFLECT(word, ref top);
+
+                                word.Top = top;
+                            }
+
+                            string r = lang.Convert(word.Top.Stem + word.Top.Suffix);
+
+                            if (!lang.IsLegible(r)) {
+                                return null;
+                            }
+
+                            return r;
+                        } else {
+
+                            return s;
+
+                        }
+
+                        /*
+                        
+
+
+                        return str; */
+                    }
+                }
 
                 return s;
 
             },
-            
+
             exclude,
 
             new string[]
@@ -91,20 +562,19 @@ static class App
 
             limit: DIMENSIONS
 
-        );         
+        );
 
-        var g = Graph.Create(lex);
+        var graph = Graph.Create(lex);
 
-        g.MD("..\\DATA\\LA.md");
+        graph.MD("..\\DATA\\LA.md");
         // g.JSON("..\\DATA\\LA.json");
-        g.JSON("D:\\Latin\\17-7.json");
+        graph.JSON("D:\\Latin\\17-7.json");
 
         Console.WriteLine("Done.");
     }
 
-    static Dictionary<char, int> Numerals = new Dictionary<char, int>() { {'i', 1}, {'u', 5}, {'x', 10}, {'l', 50}, {'c', 100}, {'d', 500}, {'m', 1000} };
-    static int? RomanToInteger(string s)
-    {
+    static Dictionary<char, int> Numerals = new Dictionary<char, int>() { { 'i', 1 }, { 'u', 5 }, { 'x', 10 }, { 'l', 50 }, { 'c', 100 }, { 'd', 500 }, { 'm', 1000 } };
+    static int? RomanToInteger(string s) {
         int number = 0;
         for (int i = 0; i < s.Length; i++) {
             if (!Numerals.ContainsKey(s[i])) {
@@ -121,8 +591,7 @@ static class App
         }
         return number;
     }
-    static string IntegerToRoman(int number)
-    {
+    static string IntegerToRoman(int number) {
         if ((number < 0) || (number > 3999)) return null;
         if (number < 1) return string.Empty;
         if (number >= 1000) return "m" + IntegerToRoman(number - 1000);
@@ -141,18 +610,14 @@ static class App
         return null;
     }
 
-    static IDictionary<string, Bag> Build(int WINDOW, System.Language.IOrthography lang, Func<string, string> support, ISet<string> ignore, string[] paths, string search = "*.*")
-    {
+    static IDictionary<string, Bag> Build(int WINDOW, System.Language.IOrthography lang, Func<string, string> support, ISet<string> ignore, string[] paths, string search = "*.*") {
         Dictionary<String, Bag> lexicon = new Dictionary<String, Bag>();
 
         Tokens.Parse(paths, search,
 
-            (TOKEN, EMIT) =>
-            {
-                if (TOKEN.Length > 1)
-                {
-                    if (char.ToUpperInvariant(TOKEN[1]) != TOKEN[1])
-                    {
+            (TOKEN, EMIT) => {
+                if (TOKEN.Length > 1) {
+                    if (char.ToUpperInvariant(TOKEN[1]) != TOKEN[1]) {
                         TOKEN = TOKEN.ToLowerInvariant();
                     }
                 }
@@ -162,33 +627,29 @@ static class App
 
                 string s = lang.Convert(TOKEN);
 
-                if (!lang.IsLegible(s))
-                {
+                if (!lang.IsLegible(s)) {
                     return;
                 }
 
                 /* Do not take single letter entries unless they start with upper case */
 
-                if (s.Length == 1)
-                {
+                if (s.Length == 1) {
                     if (char.ToUpperInvariant(s[0]) != s[0]) {
                         return;
-                    } 
+                    }
                 }
-                 
+
                 /* Do not take roman numerals  */
 
-                if (s.Length > 1 && char.ToUpperInvariant(s[0]) != s[0])
-                {
+                if (s.Length > 1 && char.ToUpperInvariant(s[0]) != s[0]) {
                     bool same = true;
-                    for (int i = 1; i < s.Length; i++)
-                    {
+                    for (int i = 1; i < s.Length; i++) {
                         if (char.ToUpperInvariant(s[i]) != char.ToUpperInvariant(s[i - 1])) {
                             same = false;
                             break;
                         }
                     }
-                    if (s != "ui" && s != "uim" && s != "uix" && s != "uii"
+                    if (s != "ui" && s != "uim" && s != "uix"
                            && s != "lux" && s != "lum"
                            && s != "cum"
                            && s != "cui"
@@ -200,8 +661,7 @@ static class App
                            && s != "dix"
                            && s != "di"
                            && s != "dii"
-                           && s != "dux" && s != "dum")
-                    {
+                           && s != "dux" && s != "dum") {
                         var n = RomanToInteger(s);
                         if (n.HasValue) {
                             var c = IntegerToRoman(n.Value);
@@ -212,7 +672,7 @@ static class App
                     }
                     if (same) {
                         return;
-                    }                    
+                    }
                 }
 
                 /* Must have at least one vowel
@@ -222,13 +682,10 @@ static class App
                                      
                  */
 
-                if (s.Length > 1 && char.ToUpperInvariant(s[0]) != s[0])
-                {
+                if (s.Length > 1 && char.ToUpperInvariant(s[0]) != s[0]) {
                     int vowels = 0;
-                    for (int i = 0; i < s.Length; i++)
-                    {
-                        switch (s[i])
-                        {
+                    for (int i = 0; i < s.Length; i++) {
+                        switch (s[i]) {
                             case 'a':
                             case 'e':
                             case 'i':
@@ -236,63 +693,45 @@ static class App
                             case 'u':
                                 vowels++;
                                 break;
-                        } 
+                        }
                     }
-                    if (vowels <= 0)
-                    {
+                    if (vowels <= 0) {
                         return;
                     }
                 }
 
-                if (s.EndsWith("que") && s.Length > "que".Length)
-                {
+                if (s.EndsWith("que") && s.Length > "que".Length) {
                     s = s.Substring(0, s.Length - "que".Length);
                 }
 
-                if (s.EndsWith("QVE") && s.Length > "QVE".Length)
-                {
+                if (s.EndsWith("QVE") && s.Length > "QVE".Length) {
                     s = s.Substring(0, s.Length - "QVE".Length);
                 }
 
-                if (ignore.Contains(s))
-                {
+                if (ignore.Contains(s)) {
                     return;
                 }
 
-                if (support != null)
-                {
-                    s = lang.Convert(support(s));
-
-                    if (!lang.IsLegible(s))
-                    {
-                        return;
-                    }
+                if (support != null) {
+                    s = support(s);
                 }
 
-                if (EMIT != null)
-                {
+                if (EMIT != null && s != null && s.Length > 0) {
                     EMIT(s);
                 }
             },
 
-            (FILE, DOC) =>
-            {
+            (FILE, DOC) => {
                 Log(Path.GetFullPath(FILE));
 
-                var bags = Bags.Compute(DOC, WINDOW, (FOCUS, NEIGHBOR, Δ) =>
-                {
+                var bags = Bags.Compute(DOC, WINDOW, (FOCUS, NEIGHBOR, Δ) => {
 
-                    if (FOCUS[0] == char.ToUpperInvariant(FOCUS[0]))
-                    {
-                        if (NEIGHBOR[0] != char.ToUpperInvariant(NEIGHBOR[0]))
-                        {
+                    if (FOCUS[0] == char.ToUpperInvariant(FOCUS[0])) {
+                        if (NEIGHBOR[0] != char.ToUpperInvariant(NEIGHBOR[0])) {
                             return false;
                         }
-                    }
-                    else if (NEIGHBOR[0] == char.ToUpperInvariant(NEIGHBOR[0]))
-                    {
-                        if (FOCUS[0] != char.ToUpperInvariant(FOCUS[0]))
-                        {
+                    } else if (NEIGHBOR[0] == char.ToUpperInvariant(NEIGHBOR[0])) {
+                        if (FOCUS[0] != char.ToUpperInvariant(FOCUS[0])) {
                             return false;
                         }
                     }
@@ -301,16 +740,12 @@ static class App
 
                 });
 
-                foreach (var bag in bags)
-                {
-                    if (lexicon != null)
-                    {
-                        lock (lexicon)
-                        {
+                foreach (var bag in bags) {
+                    if (lexicon != null) {
+                        lock (lexicon) {
                             Bag lex; string key = bag.Key;
 
-                            if (!lexicon.TryGetValue(key, out lex))
-                            {
+                            if (!lexicon.TryGetValue(key, out lex)) {
                                 lexicon[key] = lex = new Bag(key, lexicon.Count);
                             }
 
@@ -324,48 +759,38 @@ static class App
         return lexicon;
     }
 
-    static void Reduce(this IDictionary<string, Bag> lexicon, System.Language.IOrthography lang, int weight, int limit)
-    {
+    static void Reduce(this IDictionary<string, Bag> lexicon, System.Language.IOrthography lang, int weight, int limit) {
         var reduce = new HashSet<string>(); var depends = new HashSet<string>();
 
-        Parallel.ForEach(lexicon, (bag) =>
-        {
+        Parallel.ForEach(lexicon, (bag) => {
             List<Tuple<String, Int32, Int32>> SORT = new List<Tuple<String, Int32, Int32>>();
 
             // A single bag should never be worked on concurrently
 
-            bag.Value.ForEach((key, count) =>
-            {
+            bag.Value.ForEach((key, count) => {
                 Bag lex = null;
 
-                if (!lexicon.TryGetValue(key, out lex))
-                {
+                if (!lexicon.TryGetValue(key, out lex)) {
                     lex = null;
                 }
 
-                if (lex != null && lex.Weight >= weight)
-                {
+                if (lex != null && lex.Weight >= weight) {
                     SORT.Add(new Tuple<String, Int32, Int32>(key, count, lex.Weight));
                 }
 
             });
 
-            SORT.Sort((a, b) =>
-            {
+            SORT.Sort((a, b) => {
 
                 int c = 0;
 
-                if (a.Item2 > b.Item2)
-                {
+                if (a.Item2 > b.Item2) {
                     c = -1;
-                }
-                else if (a.Item2 < b.Item2)
-                {
+                } else if (a.Item2 < b.Item2) {
                     c = +1;
                 }
 
-                if (c == 0)
-                {
+                if (c == 0) {
                     c = lang.Compare(a.Item1, b.Item1);
                 }
 
@@ -375,10 +800,8 @@ static class App
 
             List<Tuple<String, Int32, Int32>> TAKE = new List<Tuple<String, Int32, Int32>>();
 
-            for (int i = 0; i < SORT.Count; i++)
-            {
-                if (TAKE.Count >= limit)
-                {
+            for (int i = 0; i < SORT.Count; i++) {
+                if (TAKE.Count >= limit) {
                     break;
                 }
 
@@ -387,32 +810,26 @@ static class App
 
             bag.Value.Clear();
 
-            for (int i = 0; i < TAKE.Count; i++)
-            {
+            for (int i = 0; i < TAKE.Count; i++) {
                 string key = TAKE[i].Item1;
 
                 bag.Value.Add(key, TAKE[i].Item2);
 
-                lock (depends)
-                {
+                lock (depends) {
                     depends.Add(key);
                 }
             }
 
-            if (bag.Value.Weight < weight)
-            {
-                lock (reduce)
-                {
+            if (bag.Value.Weight < weight) {
+                lock (reduce) {
                     reduce.Add(bag.Value.Key);
                 }
             }
 
         });
 
-        foreach (var key in reduce)
-        {
-            if (!depends.Contains(key))
-            {
+        foreach (var key in reduce) {
+            if (!depends.Contains(key)) {
                 lexicon.Remove(key);
             }
         }
@@ -420,27 +837,20 @@ static class App
     }
 }
 
-namespace System.Language
-{
-    public interface IOrthography
-    {
+namespace System.Language {
+    public interface IOrthography {
         int Compare(string s, string c);
         string Convert(string s);
         bool IsLegible(string s);
     }
 
-    public static class Orthography
-    {
-        public class Latin : IOrthography
-        {
-            public string Convert(string s)
-            {
+    public static class Orthography {
+        public class Latin : IOrthography {
+            public string Convert(string s) {
                 StringBuilder r = new StringBuilder();
 
-                Func<char, string> Convert = (char c) =>
-                {
-                    switch (c)
-                    {
+                Func<char, string> Convert = (char c) => {
+                    switch (c) {
                         /*
                          */
 
@@ -547,10 +957,8 @@ namespace System.Language
                     return c.ToString();
                 };
 
-                Func<string, string> Change = (glyph) =>
-                {
-                    switch (glyph)
-                    {
+                Func<string, string> Change = (glyph) => {
+                    switch (glyph) {
                         case "j": return "i";
                         case "J": return "I";
                         case "v": return "u";
@@ -560,10 +968,8 @@ namespace System.Language
                     return glyph;
                 };
 
-                if (s != null)
-                {
-                    for (int i = 0; i < s.Length; i++)
-                    {
+                if (s != null) {
+                    for (int i = 0; i < s.Length; i++) {
                         var glyph = Convert(s[i]);
 
                         glyph = Change(glyph);
@@ -575,14 +981,11 @@ namespace System.Language
                 return r.ToString();
             }
 
-            public bool IsLegible(string s)
-            {
-                for (int i = 0; i < s.Length; i++)
-                {
+            public bool IsLegible(string s) {
+                for (int i = 0; i < s.Length; i++) {
                     char c = s[i];
 
-                    if (!char.IsLetter(c))
-                    {
+                    if (!char.IsLetter(c)) {
                         return false;
                     }
                 }
@@ -590,28 +993,20 @@ namespace System.Language
                 return true;
             }
 
-            public int Compare(string s, string c)
-            {
+            public int Compare(string s, string c) {
                 int l = Math.Min(s.Length, c.Length);
 
-                for (int i = 0; i < l; i++)
-                {
-                    if (s[i] > c[i])
-                    {
+                for (int i = 0; i < l; i++) {
+                    if (s[i] > c[i]) {
                         return +1;
-                    }
-                    else if (s[i] < c[i])
-                    {
+                    } else if (s[i] < c[i]) {
                         return -1;
                     }
                 }
 
-                if (s.Length > c.Length)
-                {
+                if (s.Length > c.Length) {
                     return +1;
-                }
-                else if (s.Length < c.Length)
-                {
+                } else if (s.Length < c.Length) {
                     return -1;
                 }
 
@@ -619,8 +1014,7 @@ namespace System.Language
             }
         }
 
-        public static IOrthography Create()
-        {
+        public static IOrthography Create() {
             return new Latin();
         }
     }

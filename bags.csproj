@@ -38,6 +38,7 @@
   <ItemGroup>
     <Compile Include="app.cs" />
     <Compile Include="src\graph.cs" />
+    <Compile Include="src\hash.cs" />
     <Compile Include="src\parse.cs" />
     <Compile Include="src\compute.cs" />
     <Compile Include="src\whitakar\Converter.cs" />
